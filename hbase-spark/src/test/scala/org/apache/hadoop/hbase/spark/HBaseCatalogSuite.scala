@@ -19,7 +19,8 @@ package org.apache.hadoop.hbase.spark
 
 import org.apache.hadoop.hbase.spark.datasources.{DoubleSerDes, SerDes}
 import org.apache.hadoop.hbase.util.Bytes
-import org.apache.spark.sql.datasources.hbase.{DataTypeParserWrapper, HBaseTableCatalog}
+import org.apache.spark.sql.catalyst.parser.CatalystSqlParser
+import org.apache.spark.sql.datasources.hbase.{HBaseTableCatalog}
 import org.apache.spark.sql.types._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuite}
 
@@ -47,7 +48,7 @@ class HBaseCatalogSuite extends FunSuite with BeforeAndAfterEach with BeforeAndA
 
   def checkDataType(dataTypeString: String, expectedDataType: DataType): Unit = {
     test(s"parse ${dataTypeString.replace("\n", "")}") {
-      assert(DataTypeParserWrapper.parse(dataTypeString) === expectedDataType)
+      assert(CatalystSqlParser.parseDataType(dataTypeString) === expectedDataType)
     }
   }
   test("basic") {
@@ -90,10 +91,10 @@ class HBaseCatalogSuite extends FunSuite with BeforeAndAfterEach with BeforeAndA
     val parameters = Map(HBaseTableCatalog.tableCatalog->json)
     val t = HBaseTableCatalog(parameters)
     assert(t.getField("KEY_FIELD").isRowKey)
-    assert(DataTypeParserWrapper.parse("STRING") === t.getField("A_FIELD").dt)
+    assert(CatalystSqlParser.parseDataType("STRING") === t.getField("A_FIELD").dt)
     assert(!t.getField("A_FIELD").isRowKey)
-    assert(DataTypeParserWrapper.parse("DOUBLE") === t.getField("B_FIELD").dt)
-    assert(DataTypeParserWrapper.parse("BINARY") === t.getField("C_FIELD").dt)
+    assert(CatalystSqlParser.parseDataType("DOUBLE") === t.getField("B_FIELD").dt)
+    assert(CatalystSqlParser.parseDataType("BINARY") === t.getField("C_FIELD").dt)
   }
 
   test("compatiblity") {
@@ -102,9 +103,9 @@ class HBaseCatalogSuite extends FunSuite with BeforeAndAfterEach with BeforeAndA
       "hbase.table" -> "t1")
     val t = HBaseTableCatalog(m)
     assert(t.getField("KEY_FIELD").isRowKey)
-    assert(DataTypeParserWrapper.parse("STRING") === t.getField("A_FIELD").dt)
+    assert(CatalystSqlParser.parseDataType("STRING") === t.getField("A_FIELD").dt)
     assert(!t.getField("A_FIELD").isRowKey)
-    assert(DataTypeParserWrapper.parse("DOUBLE") === t.getField("B_FIELD").dt)
-    assert(DataTypeParserWrapper.parse("BINARY") === t.getField("C_FIELD").dt)
+    assert(CatalystSqlParser.parseDataType("DOUBLE") === t.getField("B_FIELD").dt)
+    assert(CatalystSqlParser.parseDataType("BINARY") === t.getField("C_FIELD").dt)
   }
 }
